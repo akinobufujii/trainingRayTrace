@@ -29,8 +29,10 @@ class Ray
 glm::vec3 calcColor(const Ray& ray)
 {
 	auto normalizedDir = glm::normalize(ray.m_dir);
-	float t = 0.5f * (normalizedDir.y + 1.0f);
-	return (1.0f - t) * glm::vec3(1.0f, 1.0f, 1.0f) + t * glm::vec3(0.5f, 0.7f, 1.0f);
+	float t = glm::clamp(0.5f * (normalizedDir.y + 1.0f), 0.0f, 1.0f);
+
+	// 倍率に応じて水色と白を線形補間
+	return glm::mix(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.5f, 0.7f, 1.0f), t);
 }
 
 int main(int, char **)
@@ -41,10 +43,10 @@ int main(int, char **)
 	constexpr int ny = 100;
 	constexpr int bpp = 3;
 
-	glm::vec3 lowerLeftCorner(-2.0, -1.0, -1.0);
-	glm::vec3 horizontal(4.0, 0.0, 0.0);
-	glm::vec3 vertical(0.0, 2.0, 0.0);
-	glm::vec3 origin(0.0, 0.0, 0.0);
+	glm::vec3 lowerLeftCorner(-2.0, -1.0, -1.0);	// 左下
+	glm::vec3 horizontal(4.0, 0.0, 0.0);			// 水平幅
+	glm::vec3 vertical(0.0, 2.0, 0.0);				// 垂直幅
+	glm::vec3 origin(0.0, 0.0, 0.0);				// 中心
 
 	char *data = new char[nx * ny * bpp];
 	for (int j = ny - 1; j >= 0; j--)
@@ -54,17 +56,14 @@ int main(int, char **)
 			float u = float(i) / float(nx);
 			float v = float(j) / float(ny);
 
+			// 左下からレイを飛ばして走査していく
 			Ray ray(origin, lowerLeftCorner + u * horizontal + v * vertical);
 			auto color = calcColor(ray);
 
-			int ir = int(255.99f * color.x);
-			int ig = int(255.99f * color.y);
-			int ib = int(255.99f * color.z);
-
 			const int offset = ((ny - 1 - j) * nx * bpp) + (i * bpp);
-			data[offset + 0] = ir;
-			data[offset + 1] = ig;
-			data[offset + 2] = ib;
+			data[offset + 0] = int(255.99f * color.x);
+			data[offset + 1] = int(255.99f * color.y);
+			data[offset + 2] = int(255.99f * color.z);
 		}
 	}
 
