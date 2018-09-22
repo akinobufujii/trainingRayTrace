@@ -1,77 +1,52 @@
 #include <iostream>
+#include <float.h>
+#include <memory>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
-#include "glm/ext.hpp"
+#include "glm/glm.hpp"
 
-// 光線クラス
-class Ray
-{
-  public:
-	Ray() {}
-	Ray(const glm::vec3 &origin, const glm::vec3 &dir)
-		: m_origin(origin), m_dir(dir)
-	{
-	}
-
-	~Ray() {}
-
-	const glm::vec3 pointAtParam(float t)
-	{
-		return m_origin + (t * m_dir);
-	}
-
-	glm::vec3 m_origin; // 光線の原点
-	glm::vec3 m_dir;	// 光線の方向
-};
-
-// 球に当たっているかどうか
-bool isHitSphere(const glm::vec3& center, float radius, const Ray& ray)
-{
-	glm::vec3 centerToRay = ray.m_origin - center;
-
-	// 半径の2乗と(光線 - 球の中心)の2乗は等しい
-	// (光線 - 球の中心)の2乗 = (光線 - 球の中心)・(光線 - 球の中心)と表すことができる
-	// そのため、「(光線 - 球の中心)・(光線 - 球の中心) = 半径の2乗」と表せる
-	float a = glm::dot(ray.m_dir, ray.m_dir);
-	float b = 2.0f * glm::dot(centerToRay, ray.m_dir);
-	float c = glm::dot(centerToRay, centerToRay) - radius * radius;
-
-	// 解の公式、「x = (-b +- sqrt(b * b - 4 * a * c)) / (2 * a)」
-	// 平方根の中の式が実数解（0以上）を持てばレイはあたっている
-	float discreminat = b * b - 4 * a * c;
-	return discreminat >= 0.0f;
-}
+#include "utility/Ray.h"
+#include "utility/Sphere.h"
+#include "utility/HitableList.h"
 
 // 色計算（レイトレース処理）
-glm::vec3 calcColor(const Ray& ray)
+glm::vec3 calcColor(const Ray &ray, const std::shared_ptr<Hitable> &pWorld)
 {
-	// 球に当たっているか判断する
-	const glm::vec3 sphereCenter(0.0f, 0.0f, -1.0f);
-	if(isHitSphere(sphereCenter, 0.5f, ray))
+	HitRecord hitRecord;
+	if (pWorld->isHit(ray, 0.0f, FLT_MAX, &hitRecord))
 	{
-		return glm::vec3(1.0f, 0.0f, 0.0f);
+		// 法線の色を出力する
+		return 0.5f * (hitRecord.normal + 1.0f);
 	}
 
 	auto normalizedDir = glm::normalize(ray.m_dir);
-	float t = glm::clamp(0.5f * (normalizedDir.y + 1.0f), 0.0f, 1.0f);
+	float t = 0.5f * (normalizedDir.y + 1.0f);
 
-	// 倍率に応じて水色と白を線形補間
+	// 倍率に応じて白色と水色を線形補間
 	return glm::mix(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.5f, 0.7f, 1.0f), t);
 }
 
 int main(int, char **)
 {
-	std::cout << "start ratrace\n";
+	std::cout << "start ray trace" << std::endl;
 
 	constexpr int nx = 200;
 	constexpr int ny = 100;
 	constexpr int bpp = 3;
 
-	glm::vec3 lowerLeftCorner(-2.0, -1.0, -1.0);	// 左下
-	glm::vec3 horizontal(4.0, 0.0, 0.0);			// 水平幅
-	glm::vec3 vertical(0.0, 2.0, 0.0);				// 垂直幅
-	glm::vec3 origin(0.0, 0.0, 0.0);				// 中心
+	const glm::vec3 lowerLeftCorner(-2.0, -1.0, -1.0); // 左下
+	const glm::vec3 horizontal(4.0, 0.0, 0.0);		   // 水平幅
+	const glm::vec3 vertical(0.0, 2.0, 0.0);		   // 垂直幅
+	const glm::vec3 origin(0.0, 0.0, 0.0);			   // 中心
+
+	// レイトレース用のデータ作成
+	auto pWorld = std::make_shared<HitableList>(
+		std::vector<std::shared_ptr<Hitable>>(
+			{
+				std::make_shared<Sphere>(glm::vec3(0.0f, 0.0f, -1.0f), 0.5f),
+				std::make_shared<Sphere>(glm::vec3(0.0f, -100.5f, -1.0f), 100.0f),
+			}));
 
 	char *data = new char[nx * ny * bpp];
 	for (int j = ny - 1; j >= 0; j--)
@@ -83,16 +58,17 @@ int main(int, char **)
 
 			// 左下からレイを飛ばして走査していく
 			Ray ray(origin, lowerLeftCorner + u * horizontal + v * vertical);
-			auto color = calcColor(ray);
+			auto color = calcColor(ray, pWorld);
 
+			// 画像データ出力用にバッファに書いていく
 			const int offset = ((ny - 1 - j) * nx * bpp) + (i * bpp);
-			data[offset + 0] = int(255.99f * color.x);
-			data[offset + 1] = int(255.99f * color.y);
-			data[offset + 2] = int(255.99f * color.z);
+			data[offset + 0] = char(255.99f * color.x);
+			data[offset + 1] = char(255.99f * color.y);
+			data[offset + 2] = char(255.99f * color.z);
 		}
 	}
 
 	stbi_write_tga("output.tga", nx, ny, bpp, data);
 
-	std::cout << "end ratrace\n";
+	std::cout << "end ray trace" << std::endl;
 }

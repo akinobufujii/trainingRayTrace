@@ -6,7 +6,12 @@ enable_testing()
 
 include_directories(./stb)
 include_directories(./glm)
-add_executable(trainingRaytrace main.cpp)
+add_executable(trainingRaytrace
+    main.cpp
+    utility/HitableList.cpp
+    utility/Ray.cpp
+    utility/Sphere.cpp
+)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
