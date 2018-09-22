@@ -1,7 +1,12 @@
 {
 	"files.associations": {
 		"xstring": "cpp",
-		"xutility": "cpp"
+		"xutility": "cpp",
+		"limits": "cpp",
+		"xlocale": "cpp",
+		"memory": "cpp",
+		"algorithm": "cpp",
+		"chrono": "cpp"
 	},
 
 	"C_Cpp.clang_format_style": "Visual Studio",
