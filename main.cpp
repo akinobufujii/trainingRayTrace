@@ -25,9 +25,34 @@ class Ray
 	glm::vec3 m_dir;	// 光線の方向
 };
 
+// 球に当たっているかどうか
+bool isHitSphere(const glm::vec3& center, float radius, const Ray& ray)
+{
+	glm::vec3 centerToRay = ray.m_origin - center;
+
+	// 半径の2乗と(光線 - 球の中心)の2乗は等しい
+	// (光線 - 球の中心)の2乗 = (光線 - 球の中心)・(光線 - 球の中心)と表すことができる
+	// そのため、「(光線 - 球の中心)・(光線 - 球の中心) = 半径の2乗」と表せる
+	float a = glm::dot(ray.m_dir, ray.m_dir);
+	float b = 2.0f * glm::dot(centerToRay, ray.m_dir);
+	float c = glm::dot(centerToRay, centerToRay) - radius * radius;
+
+	// 解の公式、「x = (-b +- sqrt(b * b - 4 * a * c)) / (2 * a)」
+	// 平方根の中の式が実数解（0以上）を持てばレイはあたっている
+	float discreminat = b * b - 4 * a * c;
+	return discreminat >= 0.0f;
+}
+
 // 色計算（レイトレース処理）
 glm::vec3 calcColor(const Ray& ray)
 {
+	// 球に当たっているか判断する
+	const glm::vec3 sphereCenter(0.0f, 0.0f, -1.0f);
+	if(isHitSphere(sphereCenter, 0.5f, ray))
+	{
+		return glm::vec3(1.0f, 0.0f, 0.0f);
+	}
+
 	auto normalizedDir = glm::normalize(ray.m_dir);
 	float t = glm::clamp(0.5f * (normalizedDir.y + 1.0f), 0.0f, 1.0f);
 
