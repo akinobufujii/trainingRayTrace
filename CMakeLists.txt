@@ -9,6 +9,7 @@ include_directories(${PROJECT_SOURCE_DIR}/glm)
 add_executable(trainingRaytrace
     main.cpp
     utility/Camera.cpp
+    utility/DielectricMaterial.cpp
     utility/HitableList.cpp
     utility/LambertMaterial.cpp
     utility/MetalMaterial.cpp
