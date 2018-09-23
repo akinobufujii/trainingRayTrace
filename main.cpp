@@ -12,9 +12,11 @@
 #include "utility/HitableList.h"
 #include "utility/Camera.h"
 #include "utility/Other.h"
+#include "utility/LambertMaterial.h"
+#include "utility/MetalMaterial.h"
 
 // 色計算（レイトレース処理）
-glm::vec3 calcColor(const Ray &ray, const std::shared_ptr<Hitable> &pWorld)
+glm::vec3 calcColor(const Ray &ray, const std::shared_ptr<Hitable> &pWorld, int depth)
 {
 	HitRecord hitRecord;
 
@@ -22,10 +24,18 @@ glm::vec3 calcColor(const Ray &ray, const std::shared_ptr<Hitable> &pWorld)
 	// 極めて0に近い値を最小値として渡す
 	if (pWorld && pWorld->isHit(ray, FLT_EPSILON * 2.0f, FLT_MAX, &hitRecord))
 	{
-		// 衝突したところから更にランダムな位置に光線を飛ばして
-		// 50%の色で返却する
-		glm::vec3 target = hitRecord.point + hitRecord.normal + randomInUnitSphere();
-		return 0.5f * calcColor(Ray(hitRecord.point, target - hitRecord.point), pWorld);
+		Ray scatteredRay;
+		glm::vec3 attenutaion;
+
+		if(depth < 50 && hitRecord.pMaterial && hitRecord.pMaterial->scatter(ray, hitRecord, attenutaion, scatteredRay))
+		{
+			// 受け取った減数カラーを乗算しつつ、50回上限までレイトレースする
+			return attenutaion * calcColor(scatteredRay, pWorld, depth + 1);
+		}
+		else
+		{
+			return glm::vec3(0.0f, 0.0f, 0.0f);
+		}
 	}
 
 	auto normalizedDir = glm::normalize(ray.m_dir);
@@ -48,8 +58,10 @@ int main(int, char **)
 	auto pWorld = std::make_shared<HitableList>(
 		std::vector<std::shared_ptr<Hitable>>(
 			{
-				std::make_shared<Sphere>(glm::vec3(0.0f, 0.0f, -1.0f), 0.5f),
-				std::make_shared<Sphere>(glm::vec3(0.0f, -100.5f, -1.0f), 100.0f),
+				std::make_shared<Sphere>(glm::vec3(0.0f, 0.0f, -1.0f), 0.5f, std::make_shared<LambertMaterial>(glm::vec3(0.8f, 0.3f, 0.3f))),
+				std::make_shared<Sphere>(glm::vec3(0.0f, -100.5f, -1.0f), 100.0f, std::make_shared<LambertMaterial>(glm::vec3(0.8f, 0.8f, 0.0f))),
+				std::make_shared<Sphere>(glm::vec3(1.0f, 0.0f, -1.0f), 0.5f, std::make_shared<MetalMaterial>(glm::vec3(0.8f, 0.6f, 0.2f), 1.0f)),
+				std::make_shared<Sphere>(glm::vec3(-1.0f, 0.0f, -1.0f), 0.5f, std::make_shared<MetalMaterial>(glm::vec3(0.8f, 0.8f, 0.8f), 0.3f)),
 			}));
 
 	std::random_device randomDevice;
@@ -70,7 +82,7 @@ int main(int, char **)
 
 				// 左下からレイを飛ばして走査していく
 				const Ray ray = Camera::getRay(u, v);
-				color += calcColor(ray, pWorld);
+				color += calcColor(ray, pWorld, 0);
 			}
 
 			// ガンマ補正

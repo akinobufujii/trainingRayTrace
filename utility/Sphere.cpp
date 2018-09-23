@@ -8,8 +8,8 @@ Sphere::Sphere()
 {
 }
 
-Sphere::Sphere(const glm::vec3 &center, float radius)
-	: m_center(center), m_radius(radius)
+Sphere::Sphere(const glm::vec3 &center, float radius, const std::shared_ptr<Material> &pMaterial)
+	: m_center(center), m_radius(radius), m_pMaterial(pMaterial)
 {
 }
 
@@ -36,8 +36,7 @@ bool Sphere::isHit(const Ray &ray, float min, float max, HitRecord *pResult) con
 	if (discreminat > 0.0f)
 	{
 		// 判定して、結果を書き込むラムダ式
-		auto judgeAndWriteResult = [&](float distance)
-		{
+		auto judgeAndWriteResult = [&](float distance) {
 			if (min < distance && distance < max)
 			{
 				if (pResult)
@@ -45,6 +44,7 @@ bool Sphere::isHit(const Ray &ray, float min, float max, HitRecord *pResult) con
 					pResult->distance = distance;
 					pResult->point = ray.pointAtParam(distance);
 					pResult->normal = (pResult->point - m_center) / m_radius;
+					pResult->pMaterial = m_pMaterial;
 				}
 				return true;
 			}
@@ -52,13 +52,13 @@ bool Sphere::isHit(const Ray &ray, float min, float max, HitRecord *pResult) con
 		};
 
 		// 球の中心から光線が出ている方向にあたっているか判定
-		if(judgeAndWriteResult((-b - sqrt(discreminat)) / a))
+		if (judgeAndWriteResult((-b - sqrt(discreminat)) / a))
 		{
 			return true;
 		}
 
 		// 反対側判定
-		if(judgeAndWriteResult((-b + sqrt(discreminat)) / a))
+		if (judgeAndWriteResult((-b + sqrt(discreminat)) / a))
 		{
 			return true;
 		}
