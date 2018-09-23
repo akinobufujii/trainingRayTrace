@@ -7,7 +7,9 @@
 		"memory": "cpp",
 		"algorithm": "cpp",
 		"chrono": "cpp",
-		"xiosbase": "cpp"
+		"xiosbase": "cpp",
+		"random": "cpp",
+		"functional": "cpp"
 	},
 
 	"C_Cpp.clang_format_style": "Visual Studio",
