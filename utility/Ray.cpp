@@ -1,5 +1,3 @@
-#pragma once
-
 #include "Ray.h"
 
 // 光線クラス

@@ -1,5 +1,3 @@
-#pragma once
-
 #include "Camera.h"
 
 const glm::vec3 Camera::s_bottomLeft(-2.0, -1.0, -1.0);
