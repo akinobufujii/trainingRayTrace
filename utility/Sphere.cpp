@@ -42,9 +42,9 @@ bool Sphere::isHit(const Ray &ray, float min, float max, HitRecord *pResult) con
 			{
 				if (pResult)
 				{
-					pResult->t = distance;
-					pResult->p = ray.pointAtParam(distance);
-					pResult->normal = (pResult->p - m_center) / m_radius;
+					pResult->distance = distance;
+					pResult->point = ray.pointAtParam(distance);
+					pResult->normal = (pResult->point - m_center) / m_radius;
 				}
 				return true;
 			}

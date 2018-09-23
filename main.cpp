@@ -14,7 +14,7 @@
 glm::vec3 calcColor(const Ray &ray, const std::shared_ptr<Hitable> &pWorld)
 {
 	HitRecord hitRecord;
-	if (pWorld->isHit(ray, 0.0f, FLT_MAX, &hitRecord))
+	if (pWorld && pWorld->isHit(ray, 0.0f, FLT_MAX, &hitRecord))
 	{
 		// 法線の色を出力する
 		return 0.5f * (hitRecord.normal + 1.0f);
@@ -31,14 +31,14 @@ int main(int, char **)
 {
 	std::cout << "start ray trace" << std::endl;
 
-	constexpr int nx = 200;
-	constexpr int ny = 100;
+	constexpr int width = 200;
+	constexpr int height = 100;
 	constexpr int bpp = 3;
 
-	const glm::vec3 lowerLeftCorner(-2.0, -1.0, -1.0); // 左下
-	const glm::vec3 horizontal(4.0, 0.0, 0.0);		   // 水平幅
-	const glm::vec3 vertical(0.0, 2.0, 0.0);		   // 垂直幅
-	const glm::vec3 origin(0.0, 0.0, 0.0);			   // 中心
+	const glm::vec3 bottomLeft(-2.0, -1.0, -1.0);	// 左下
+	const glm::vec3 horizontal(4.0, 0.0, 0.0);		// 水平幅
+	const glm::vec3 vertical(0.0, 2.0, 0.0);		// 垂直幅
+	const glm::vec3 origin(0.0, 0.0, 0.0);			// 中心
 
 	// レイトレース用のデータ作成
 	auto pWorld = std::make_shared<HitableList>(
@@ -48,27 +48,27 @@ int main(int, char **)
 				std::make_shared<Sphere>(glm::vec3(0.0f, -100.5f, -1.0f), 100.0f),
 			}));
 
-	char *data = new char[nx * ny * bpp];
-	for (int j = ny - 1; j >= 0; j--)
+	char *data = new char[width * height * bpp];
+	for (int y = height - 1; y >= 0; y--)
 	{
-		for (int i = 0; i < nx; i++)
+		for (int x = 0; x < width; x++)
 		{
-			float u = float(i) / float(nx);
-			float v = float(j) / float(ny);
+			const float u = float(x) / float(width);
+			const float v = float(y) / float(height);
 
 			// 左下からレイを飛ばして走査していく
-			Ray ray(origin, lowerLeftCorner + u * horizontal + v * vertical);
-			auto color = calcColor(ray, pWorld);
+			Ray ray(origin, bottomLeft + (u * horizontal) + (v * vertical));
+			auto color = calcColor(ray, pWorld) * 255.99f;
 
 			// 画像データ出力用にバッファに書いていく
-			const int offset = ((ny - 1 - j) * nx * bpp) + (i * bpp);
-			data[offset + 0] = char(255.99f * color.x);
-			data[offset + 1] = char(255.99f * color.y);
-			data[offset + 2] = char(255.99f * color.z);
+			const int offset = ((height - 1 - y) * width * bpp) + (x * bpp);
+			data[offset + 0] = char(color.x);
+			data[offset + 1] = char(color.y);
+			data[offset + 2] = char(color.z);
 		}
 	}
 
-	stbi_write_tga("output.tga", nx, ny, bpp, data);
+	stbi_write_tga("output.tga", width, height, bpp, data);
 
 	std::cout << "end ray trace" << std::endl;
 }

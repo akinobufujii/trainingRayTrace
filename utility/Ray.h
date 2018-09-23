@@ -12,7 +12,7 @@ class Ray
 	~Ray();
 
 	// 指定倍率分、光線を伸ばした位置を返す
-	const glm::vec3 pointAtParam(float t) const;
+	const glm::vec3 pointAtParam(float distance) const;
 
 	glm::vec3 m_origin; // 光線の原点
 	glm::vec3 m_dir;	// 光線の方向

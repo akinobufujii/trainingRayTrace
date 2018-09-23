@@ -17,7 +17,7 @@ Ray::~Ray()
 }
 
 // 指定倍率分、光線を伸ばした位置を返す
-const glm::vec3 Ray::pointAtParam(float t) const
+const glm::vec3 Ray::pointAtParam(float distance) const
 {
-	return m_origin + (t * m_dir);
+	return m_origin + (distance * m_dir);
 }

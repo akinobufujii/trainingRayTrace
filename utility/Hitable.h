@@ -7,9 +7,9 @@ class Ray;
 // 衝突レコード
 struct HitRecord
 {
-	float t;
-	glm::vec3 p;
-	glm::vec3 normal;
+	float distance;		// 衝突した距離
+	glm::vec3 point;	// 衝突した場所
+	glm::vec3 normal;	// 衝突した方向
 };
 
 // 衝突しうることを表すインターフェイス
