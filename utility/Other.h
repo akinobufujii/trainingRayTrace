@@ -7,3 +7,7 @@ glm::vec3 randomInUnitSphere();
 
 // 反射ベクトル獲得(屈折を考慮)
 bool getRefrect(const glm::vec3& in, const glm::vec3& normal, float niOverNt, glm::vec3& refracted);
+
+// Christophe Schlick が考えた関数
+// ガラスマテリアルを表現するのに使用
+float schlick(float cosine, float refIdx);
