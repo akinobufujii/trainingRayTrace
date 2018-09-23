@@ -1,6 +1,7 @@
 #include <iostream>
 #include <float.h>
 #include <memory>
+#include <random>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
@@ -9,6 +10,7 @@
 #include "utility/Ray.h"
 #include "utility/Sphere.h"
 #include "utility/HitableList.h"
+#include "utility/Camera.h"
 
 // 色計算（レイトレース処理）
 glm::vec3 calcColor(const Ray &ray, const std::shared_ptr<Hitable> &pWorld)
@@ -31,14 +33,10 @@ int main(int, char **)
 {
 	std::cout << "start ray trace" << std::endl;
 
-	constexpr int width = 200;
-	constexpr int height = 100;
-	constexpr int bpp = 3;
-
-	const glm::vec3 bottomLeft(-2.0, -1.0, -1.0);	// 左下
-	const glm::vec3 horizontal(4.0, 0.0, 0.0);		// 水平幅
-	const glm::vec3 vertical(0.0, 2.0, 0.0);		// 垂直幅
-	const glm::vec3 origin(0.0, 0.0, 0.0);			// 中心
+	constexpr int width = 200;		   // 幅
+	constexpr int height = 100;		   // 高さ
+	constexpr int bpp = 3;			   // 画像データの色要素数
+	constexpr int samplingCount = 100; // アンチエイジングのサンプル数
 
 	// レイトレース用のデータ作成
 	auto pWorld = std::make_shared<HitableList>(
@@ -48,17 +46,27 @@ int main(int, char **)
 				std::make_shared<Sphere>(glm::vec3(0.0f, -100.5f, -1.0f), 100.0f),
 			}));
 
+	std::random_device randomDevice;
+	std::mt19937 randomEngine(randomDevice());
+	std::uniform_real_distribution<float> randomOffset(0.0f, 1.0f);
+
 	char *data = new char[width * height * bpp];
 	for (int y = height - 1; y >= 0; y--)
 	{
 		for (int x = 0; x < width; x++)
 		{
-			const float u = float(x) / float(width);
-			const float v = float(y) / float(height);
+			glm::vec3 color(0.0f, 0.0f, 0.0f);
+			for (int i = 0; i < samplingCount; ++i)
+			{
+				// ジッタリングを行う
+				const float u = float(x + randomOffset(randomEngine)) / float(width);
+				const float v = float(y + randomOffset(randomEngine)) / float(height);
 
-			// 左下からレイを飛ばして走査していく
-			Ray ray(origin, bottomLeft + (u * horizontal) + (v * vertical));
-			auto color = calcColor(ray, pWorld) * 255.99f;
+				// 左下からレイを飛ばして走査していく
+				const Ray ray = Camera::getRay(u, v);
+				color += calcColor(ray, pWorld);
+			}
+			color = (color / float(samplingCount)) * 255.99f;
 
 			// 画像データ出力用にバッファに書いていく
 			const int offset = ((height - 1 - y) * width * bpp) + (x * bpp);
