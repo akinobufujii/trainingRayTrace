@@ -1,6 +1,7 @@
 #include "DielectricMaterial.h"
 
 #include <algorithm>
+#include <random>
 #include "glm/glm.hpp"
 #include "Hitable.h"
 #include "Ray.h"
@@ -10,8 +11,8 @@ DielectricMaterial::DielectricMaterial()
 {
 }
 
-DielectricMaterial::DielectricMaterial(float refIndex)
-	: m_refIndex(refIndex)
+DielectricMaterial::DielectricMaterial(float refIdx)
+	: m_refIdx(refIdx)
 {
 }
 
@@ -26,36 +27,42 @@ bool DielectricMaterial::scatter(
 	glm::vec3 &attenuation,
 	Ray &scattered) const
 {
-	glm::vec3 outwardNormal;
-	float niOverNt = 0;
-
 	// 色は減衰しない
 	attenuation = glm::vec3(1.0f, 1.0f, 1.0f);
+
+	glm::vec3 outwardNormal;
+	float niOverNt = 0;
+	float cosine = 0;
 
 	if(glm::dot(in.m_dir, hitRecord.normal) > 0)
 	{
 		// 1~90度以内
 		outwardNormal = -hitRecord.normal;
-		niOverNt = m_refIndex;
+		niOverNt = m_refIdx;
+		cosine = m_refIdx * glm::dot(in.m_dir, hitRecord.normal) / glm::length(in.m_dir);
 	}
 	else
 	{
 		// それ以外
 		outwardNormal = hitRecord.normal;
-		niOverNt = 1.0f / m_refIndex;
+		niOverNt = 1.0f / m_refIdx;
+		cosine = -glm::dot(in.m_dir, hitRecord.normal) / glm::length(in.m_dir);
 	}
 
 	glm::vec3 refracted;	// 屈折ベクトル
-	if(getRefrect(in.m_dir, outwardNormal, niOverNt, refracted))
+	float reflectProb = (getRefrect(in.m_dir, outwardNormal, niOverNt, refracted)) ? schlick(cosine, m_refIdx) : 1.0f;
+
+	std::random_device randomDevice;
+	std::mt19937 randomEngine(randomDevice());
+	std::uniform_real_distribution<float> randomOffset(0.0f, 1.0f);
+
+	if(randomOffset(randomEngine) < reflectProb)
 	{
-		// 屈折した光線を返す
 		scattered = Ray(hitRecord.point, refracted);
 	}
 	else
 	{
-		// 単なる反射光線を返す
 		scattered = Ray(hitRecord.point, glm::reflect(glm::normalize(in.m_dir), hitRecord.normal));
-		return false;
 	}
 
 	return true;

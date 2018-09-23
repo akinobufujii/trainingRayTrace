@@ -8,7 +8,7 @@ class DielectricMaterial : public Material
 {
   public:
 	DielectricMaterial();
-	DielectricMaterial(float refIndex);
+	DielectricMaterial(float refIdx);
 
 	~DielectricMaterial();
 
@@ -19,5 +19,5 @@ class DielectricMaterial : public Material
 		glm::vec3 &attenuation,
 		Ray &scattered) const override;
 
-	float m_refIndex;	// 参照インデックス
+	float m_refIdx;
 };
