@@ -10,6 +10,8 @@ add_executable(trainingRaytrace
     main.cpp
     utility/Camera.cpp
     utility/HitableList.cpp
+    utility/LambertMaterial.cpp
+    utility/MetalMaterial.cpp
     utility/Other.cpp
     utility/Ray.cpp
     utility/Sphere.cpp
