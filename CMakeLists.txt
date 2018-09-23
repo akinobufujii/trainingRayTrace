@@ -4,12 +4,13 @@ project(trainingRaytrace VERSION 0.1.0)
 include(CTest)
 enable_testing()
 
-include_directories(./stb)
-include_directories(./glm)
+include_directories(${PROJECT_SOURCE_DIR}/stb)
+include_directories(${PROJECT_SOURCE_DIR}/glm)
 add_executable(trainingRaytrace
     main.cpp
     utility/Camera.cpp
     utility/HitableList.cpp
+    utility/Other.cpp
     utility/Ray.cpp
     utility/Sphere.cpp
 )
