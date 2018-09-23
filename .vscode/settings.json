@@ -6,7 +6,8 @@
 		"xlocale": "cpp",
 		"memory": "cpp",
 		"algorithm": "cpp",
-		"chrono": "cpp"
+		"chrono": "cpp",
+		"xiosbase": "cpp"
 	},
 
 	"C_Cpp.clang_format_style": "Visual Studio",
