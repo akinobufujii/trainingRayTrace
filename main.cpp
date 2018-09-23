@@ -12,14 +12,39 @@
 #include "utility/HitableList.h"
 #include "utility/Camera.h"
 
+// 単位球によるランダムな位置を生成
+glm::vec3 randomInUnitSphere(
+	std::mt19937 &randomEngine,
+	std::uniform_real_distribution<float> &randomOffset)
+{
+	glm::vec3 point;
+	do
+	{
+		// -1 ～ +1まで範囲での単位球内の位置を抽選する
+		// 範囲外のものは再抽選
+		point = 2.0f * glm::vec3(randomOffset(randomEngine), randomOffset(randomEngine), randomOffset(randomEngine)) - glm::vec3(1.0f, 1.0f, 1.0f);
+	} while (glm::dot(point, point) >= 1.0f);
+
+	return point;
+}
+
 // 色計算（レイトレース処理）
-glm::vec3 calcColor(const Ray &ray, const std::shared_ptr<Hitable> &pWorld)
+glm::vec3 calcColor(
+	std::mt19937 &randomEngine,
+	std::uniform_real_distribution<float> &randomOffset,
+	const Ray &ray,
+	const std::shared_ptr<Hitable> &pWorld)
 {
 	HitRecord hitRecord;
-	if (pWorld && pWorld->isHit(ray, 0.0f, FLT_MAX, &hitRecord))
+
+	// シャドウアクネ問題を解決するために
+	// 極めて0に近い値を最小値として渡す
+	if (pWorld && pWorld->isHit(ray, FLT_EPSILON * 2.0f, FLT_MAX, &hitRecord))
 	{
-		// 法線の色を出力する
-		return 0.5f * (hitRecord.normal + 1.0f);
+		// 衝突したところから更にランダムな位置に光線を飛ばして
+		// 50%の色で返却する
+		glm::vec3 target = hitRecord.point + hitRecord.normal + randomInUnitSphere(randomEngine, randomOffset);
+		return 0.5f * calcColor(randomEngine, randomOffset, Ray(hitRecord.point, target - hitRecord.point), pWorld);
 	}
 
 	auto normalizedDir = glm::normalize(ray.m_dir);
@@ -64,9 +89,11 @@ int main(int, char **)
 
 				// 左下からレイを飛ばして走査していく
 				const Ray ray = Camera::getRay(u, v);
-				color += calcColor(ray, pWorld);
+				color += calcColor(randomEngine, randomOffset, ray, pWorld);
 			}
-			color = (color / float(samplingCount)) * 255.99f;
+
+			// ガンマ補正
+			color = glm::sqrt(color / float(samplingCount)) * 255.99f;
 
 			// 画像データ出力用にバッファに書いていく
 			const int offset = ((height - 1 - y) * width * bpp) + (x * bpp);
