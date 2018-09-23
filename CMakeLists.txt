@@ -8,6 +8,7 @@ include_directories(./stb)
 include_directories(./glm)
 add_executable(trainingRaytrace
     main.cpp
+    utility/Camera.cpp
     utility/HitableList.cpp
     utility/Ray.cpp
     utility/Sphere.cpp
