@@ -13,10 +13,11 @@
 #include "utility/Camera.h"
 
 // 単位球によるランダムな位置を生成
-glm::vec3 randomInUnitSphere(
-	std::mt19937 &randomEngine,
-	std::uniform_real_distribution<float> &randomOffset)
+glm::vec3 randomInUnitSphere()
 {
+	std::random_device randomDevice;
+	std::mt19937 randomEngine(randomDevice());
+	std::uniform_real_distribution<float> randomOffset(0.0f, 1.0f);
 	glm::vec3 point;
 	do
 	{
@@ -29,11 +30,7 @@ glm::vec3 randomInUnitSphere(
 }
 
 // 色計算（レイトレース処理）
-glm::vec3 calcColor(
-	std::mt19937 &randomEngine,
-	std::uniform_real_distribution<float> &randomOffset,
-	const Ray &ray,
-	const std::shared_ptr<Hitable> &pWorld)
+glm::vec3 calcColor(const Ray &ray, const std::shared_ptr<Hitable> &pWorld)
 {
 	HitRecord hitRecord;
 
@@ -43,8 +40,8 @@ glm::vec3 calcColor(
 	{
 		// 衝突したところから更にランダムな位置に光線を飛ばして
 		// 50%の色で返却する
-		glm::vec3 target = hitRecord.point + hitRecord.normal + randomInUnitSphere(randomEngine, randomOffset);
-		return 0.5f * calcColor(randomEngine, randomOffset, Ray(hitRecord.point, target - hitRecord.point), pWorld);
+		glm::vec3 target = hitRecord.point + hitRecord.normal + randomInUnitSphere();
+		return 0.5f * calcColor(Ray(hitRecord.point, target - hitRecord.point), pWorld);
 	}
 
 	auto normalizedDir = glm::normalize(ray.m_dir);
@@ -89,7 +86,7 @@ int main(int, char **)
 
 				// 左下からレイを飛ばして走査していく
 				const Ray ray = Camera::getRay(u, v);
-				color += calcColor(randomEngine, randomOffset, ray, pWorld);
+				color += calcColor(ray, pWorld);
 			}
 
 			// ガンマ補正
