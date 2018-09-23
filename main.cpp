@@ -14,6 +14,7 @@
 #include "utility/Other.h"
 #include "utility/LambertMaterial.h"
 #include "utility/MetalMaterial.h"
+#include "utility/DielectricMaterial.h"
 
 // 色計算（レイトレース処理）
 glm::vec3 calcColor(const Ray &ray, const std::shared_ptr<Hitable> &pWorld, int depth)
@@ -58,10 +59,11 @@ int main(int, char **)
 	auto pWorld = std::make_shared<HitableList>(
 		std::vector<std::shared_ptr<Hitable>>(
 			{
-				std::make_shared<Sphere>(glm::vec3(0.0f, 0.0f, -1.0f), 0.5f, std::make_shared<LambertMaterial>(glm::vec3(0.8f, 0.3f, 0.3f))),
+				std::make_shared<Sphere>(glm::vec3(0.0f, 0.0f, -1.0f), 0.5f, std::make_shared<LambertMaterial>(glm::vec3(0.1f, 0.2f, 0.5f))),
 				std::make_shared<Sphere>(glm::vec3(0.0f, -100.5f, -1.0f), 100.0f, std::make_shared<LambertMaterial>(glm::vec3(0.8f, 0.8f, 0.0f))),
 				std::make_shared<Sphere>(glm::vec3(1.0f, 0.0f, -1.0f), 0.5f, std::make_shared<MetalMaterial>(glm::vec3(0.8f, 0.6f, 0.2f), 1.0f)),
-				std::make_shared<Sphere>(glm::vec3(-1.0f, 0.0f, -1.0f), 0.5f, std::make_shared<MetalMaterial>(glm::vec3(0.8f, 0.8f, 0.8f), 0.3f)),
+				std::make_shared<Sphere>(glm::vec3(-1.0f, 0.0f, -1.0f), 0.5f, std::make_shared<DielectricMaterial>(1.5f)),
+				std::make_shared<Sphere>(glm::vec3(-1.0f, 0.0f, -1.0f), -0.45f, std::make_shared<DielectricMaterial>(1.5f)),
 			}));
 
 	std::random_device randomDevice;
