@@ -19,3 +19,19 @@ glm::vec3 randomInUnitSphere()
 
 	return point;
 }
+
+// 反射ベクトル獲得(屈折を考慮)
+bool getRefrect(const glm::vec3& in, const glm::vec3& normal, float niOverNt, glm::vec3& refracted)
+{
+	const glm::vec3 normalizedIn = glm::normalize(in);
+	float dot = glm::dot(normalizedIn, normal);
+	float discriminant = 1.0f - niOverNt * niOverNt * (1.0f - dot * dot);
+
+	if(discriminant > 0.0f)
+	{
+		refracted = niOverNt * (normalizedIn - normal * dot) - normal * sqrt(discriminant);
+		return true;
+	}
+
+	return false;
+}
