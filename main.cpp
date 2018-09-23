@@ -2,6 +2,7 @@
 #include <float.h>
 #include <memory>
 #include <random>
+#include <cmath>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
@@ -28,7 +29,7 @@ glm::vec3 calcColor(const Ray &ray, const std::shared_ptr<Hitable> &pWorld, int 
 		Ray scatteredRay;
 		glm::vec3 attenutaion;
 
-		if(depth < 50 && hitRecord.pMaterial && hitRecord.pMaterial->scatter(ray, hitRecord, attenutaion, scatteredRay))
+		if (depth < 50 && hitRecord.pMaterial && hitRecord.pMaterial->scatter(ray, hitRecord, attenutaion, scatteredRay))
 		{
 			// 受け取った減数カラーを乗算しつつ、50回上限までレイトレースする
 			return attenutaion * calcColor(scatteredRay, pWorld, depth + 1);
@@ -55,6 +56,8 @@ int main(int, char **)
 	constexpr int bpp = 3;			   // 画像データの色要素数
 	constexpr int samplingCount = 100; // アンチエイジングのサンプル数
 
+	const float R = cos(3.14f / 4.0f);
+
 	// レイトレース用のデータ作成
 	auto pWorld = std::make_shared<HitableList>(
 		std::vector<std::shared_ptr<Hitable>>(
@@ -70,7 +73,14 @@ int main(int, char **)
 	std::mt19937 randomEngine(randomDevice());
 	std::uniform_real_distribution<float> randomOffset(0.0f, 1.0f);
 
+	Camera camera(
+		glm::vec3(-0.5f, 0.5f, 1.0f),
+		glm::vec3(0.0f, 0.0f, -1.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f),
+		90.0f,
+		float(width) / float(height));
 	char *data = new char[width * height * bpp];
+
 	for (int y = height - 1; y >= 0; y--)
 	{
 		for (int x = 0; x < width; x++)
@@ -83,7 +93,7 @@ int main(int, char **)
 				const float v = float(y + randomOffset(randomEngine)) / float(height);
 
 				// 左下からレイを飛ばして走査していく
-				const Ray ray = Camera::getRay(u, v);
+				const Ray ray = camera.getRay(u, v);
 				color += calcColor(ray, pWorld, 0);
 			}
 
