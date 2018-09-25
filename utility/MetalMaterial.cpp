@@ -11,7 +11,7 @@ MetalMaterial::MetalMaterial()
 }
 
 MetalMaterial::MetalMaterial(const glm::vec3 &albedo, float fuzziness)
-	: m_albedo(albedo), m_fuzziness(std::max(fuzziness, 1.0f))
+	: m_albedo(albedo), m_fuzziness(std::min(fuzziness, 1.0f))
 {
 }
 
