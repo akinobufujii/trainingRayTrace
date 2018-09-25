@@ -56,13 +56,13 @@ bool DielectricMaterial::scatter(
 	std::mt19937 randomEngine(randomDevice());
 	std::uniform_real_distribution<float> randomOffset(0.0f, 1.0f);
 
-	if(randomOffset(randomEngine) < reflectProb)
+	if (randomOffset(randomEngine) < reflectProb)
 	{
-		scattered = Ray(hitRecord.point, refracted);
+		scattered = Ray(hitRecord.point, glm::reflect(glm::normalize(in.m_dir), hitRecord.normal));
 	}
 	else
 	{
-		scattered = Ray(hitRecord.point, glm::reflect(glm::normalize(in.m_dir), hitRecord.normal));
+		scattered = Ray(hitRecord.point, refracted);
 	}
 
 	return true;

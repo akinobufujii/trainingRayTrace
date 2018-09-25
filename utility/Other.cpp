@@ -41,8 +41,8 @@ bool getRefrect(const glm::vec3& in, const glm::vec3& normal, float niOverNt, gl
 // ガラスマテリアルを表現するのに使用
 float schlick(float cosine, float refIdx)
 {
-	float r0 = (1 - refIdx) / (1 + refIdx);
+	float r0 = (1.0f - refIdx) / (1.0f + refIdx);
 	r0 *= r0;
 
-	return r0 + (1 + r0) * pow(1 - cosine, 5);
+	return r0 + (1.0f + r0) * pow(1.0f - cosine, 5.0f);
 }
