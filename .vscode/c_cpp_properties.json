@@ -1,11 +1,16 @@
 {
+    "env" : {
+        "myDefaultIncludePath": [
+            "${workspaceFolder}/**",
+            "${workspaceFolder}/stb/*",
+            "${workspaceFolder}/glm/*"
+        ],
+        "myCompilerPath": "/usr/local/bin/gcc-7"
+    },
     "configurations": [
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/**",
-                "${workspaceFolder}/stb/*",
-                "${workspaceFolder}/glm/*",
                 "${vcpkgRoot}/x64-windows/include",
                 "${vcpkgRoot}/x86-windows/include"
             ],
@@ -21,6 +26,20 @@
             "intelliSenseMode": "msvc-x64",
             "configurationProvider": "vector-of-bool.cmake-tools",
             "compileCommands": "${workspaceFolder}/build/compile_commands.json"
+        },
+        {
+            "name": "Mac",
+            "intelliSenseMode": "clang-x64",
+            "macFrameworkPath": [ "/System/Library/Frameworks" ],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "compileCommands": "${workspaceFolder}/build/compile_commands.json",
+            "browse": {
+                "path": [ "${workspaceFolder}" ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            }
         }
     ],
     "version": 4
