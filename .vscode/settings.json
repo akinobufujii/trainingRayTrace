@@ -55,7 +55,10 @@
 		"xmemory": "cpp",
 		"xmemory0": "cpp",
 		"xstddef": "cpp",
-		"xtr1common": "cpp"
+		"xtr1common": "cpp",
+		"__locale": "cpp",
+		"__string": "cpp",
+		"string_view": "cpp"
 	},
 
 	"C_Cpp.clang_format_style": "Visual Studio",
