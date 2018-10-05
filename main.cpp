@@ -74,11 +74,14 @@ int main(int, char **)
 	std::uniform_real_distribution<float> randomOffset(0.0f, 1.0f);
 
 	Camera camera(
-		glm::vec3(-0.5f, 0.5f, 1.0f),
+		glm::vec3(3.0f, 3.0f, 2.0f),
 		glm::vec3(0.0f, 0.0f, -1.0f),
 		glm::vec3(0.0f, 1.0f, 0.0f),
-		90.0f,
-		float(width) / float(height));
+		20.0f,
+		float(width) / float(height),
+		2.0f,
+		glm::length(glm::vec3(3.0f, 3.0f, 3.0f))
+	);
 	char *data = new char[width * height * bpp];
 
 	for (int y = height - 1; y >= 0; y--)
